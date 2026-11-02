@@ -1,4 +1,4 @@
-# Adaptive Offline Data Synchronization Backend
+# Adaptive Data Synchronization Backend
 
 FastAPI + MongoDB + scikit-learn backend for the IS Project II.
 
