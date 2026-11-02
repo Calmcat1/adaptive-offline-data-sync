@@ -1,6 +1,6 @@
 # Adaptive Offline Data Synchronization Backend
 
-FastAPI + MongoDB + scikit-learn backend for the IS Project II prototype.
+FastAPI + MongoDB + scikit-learn backend for the IS Project II.
 
 ## Features
 - JWT-based registration and login
