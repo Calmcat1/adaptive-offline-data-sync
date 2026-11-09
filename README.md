@@ -95,7 +95,9 @@ Copy the returned `access_token` into Swagger's **Authorize** dialog as a bearer
 ```
 
 ## Model behaviour and evaluation
-The Random Forest is not assumed to be trained in advance. Initially the backend uses a documented rule-based fallback. As the system records real outcomes, call `/api/v1/sync/train-model`; training requires at least 20 labelled observations and both successful and failed outcomes. This is a prototype threshold, not a claim of statistical sufficiency. Evaluate on held-out data before reporting model accuracy, precision, recall or F1 in the project report.
+The machine learning model is not assumed to be trained in advance. Initially, the backend uses a transparent rule-based fallback. As the system records real outcomes, call /api/v1/sync/train-model; training requires at least 20 labelled observations containing both successful and failed outcomes.
+
+The pipeline uses HistGradientBoostingClassifier with in-memory payload caching, interaction feature extraction (bandwidth_per_latency, signal_battery_prod), field key normalization across client variants, and Stratified K-Fold Cross-Validation. Dynamic thresholding optimizes probability decision boundaries based on precision-recall metrics. Evaluate on held-out data before reporting final model accuracy, precision, recall, or F1 scores in project reports.
 
 ## Important prototype notes
 - Configure HTTPS and a strong secret before deployment.
