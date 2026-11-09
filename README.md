@@ -100,10 +100,10 @@ The machine learning model is not assumed to be trained in advance. Initially, t
 The pipeline uses HistGradientBoostingClassifier with in-memory payload caching, interaction feature extraction (bandwidth_per_latency, signal_battery_prod), field key normalization across client variants, and Stratified K-Fold Cross-Validation. Dynamic thresholding optimizes probability decision boundaries based on precision-recall metrics. Evaluate on held-out data before reporting final model accuracy, precision, recall, or F1 scores in project reports.
 
 ## Important prototype notes
-- Configure HTTPS and a strong secret before deployment.
-- Restrict model-training to an administrator before production use.
-- Add project-specific validation to the generic `data` field.
-- For production-grade conflict handling, use explicit record versions / ETags and transactions where supported.
-- `sync/execute` is a prototype API: it simulates the server-side decision and batch acceptance, not a guarantee that a mobile device is continuously reachable.
-- Use a stable UUID for each `client_record_id` on Android. Retrying the same ID and same payload is safe; changed payloads under the same ID are treated as conflicts.
-- For real-world deployments, add automated tests, rate limiting, audit logging, database backups and stricter role-based authorization.
+Configure HTTPS and a strong secret before deployment.
+Restrict model-training to an administrator before production use.
+Add project-specific validation to the generic data field.
+For production-grade conflict handling, use explicit record versions / ETags and transactions where supported.
+sync/execute is a prototype API: it simulates the server-side decision and batch acceptance, not a guarantee that a mobile device is continuously reachable.
+Use a stable UUID for each client_record_id on Android. Retrying the same ID and same payload is safe; changed payloads under the same ID are treated as conflicts.
+For real-world deployments, add automated tests, rate limiting, audit logging, database backups, and stricter role-based authorization.
