@@ -3,7 +3,7 @@ from app.database import get_db
 from app.schemas import SyncRequest
 from app.security import get_current_user
 from app.utils import now_utc, serialize_doc
-from app.adaptive_engine import recommend_sync, train_model
+from app.adaptive_engine_v1 import recommend_sync, train_model
 
 router = APIRouter(prefix="/sync", tags=["Synchronization"])
 
@@ -122,11 +122,11 @@ async def sync_stats(user=Depends(get_current_user)):
         "pending_records": pending,
     }
 
-@router.post("/train-model")
-async def retrain_model(user=Depends(get_current_user)):
-    # For a student prototype, authenticated users can trigger training.
-    # In a production system, restrict this endpoint to administrators.
-    cursor = get_db().network_observations.find({"owner_id": user["_id"]}).sort("created_at", -1).limit(5000)
-    observations = [doc async for doc in cursor]
-    result = train_model(observations)
-    return result
+# @router.post("/train-model")
+# async def retrain_model(user=Depends(get_current_user)):
+#     # For a student prototype, authenticated users can trigger training.
+#     # In a production system, restrict this endpoint to administrators.
+#     cursor = get_db().network_observations.find({"owner_id": user["_id"]}).sort("created_at", -1).limit(5000)
+#     observations = [doc async for doc in cursor]
+#     result = train_model(observations)
+#     return result

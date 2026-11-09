@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.database import client, db
 from app.config import settings
 from app.database import connect_to_mongo, close_mongo_connection
-from app.routes import auth, records, sync, network
+from app.routes import auth, records, network, sync_endpoint_v1, sync_endpoint_v2
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -14,7 +14,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title=settings.APP_NAME,
-    description="Backend for an adaptive offline-first field data synchronization system.",
+    description="ADAS:An Adaptive Offline Data Synchronization Framework for Intermittent Network Environments in Kenya",
     version="1.0.0",
     lifespan=lifespan,
 )
@@ -31,7 +31,7 @@ app.add_middleware(
 
 app.include_router(auth.router, prefix=settings.API_PREFIX)
 app.include_router(records.router, prefix=settings.API_PREFIX)
-app.include_router(sync.router, prefix=settings.API_PREFIX)
+app.include_router(sync_endpoint_v2.router, prefix=settings.API_PREFIX)
 app.include_router(network.router, prefix=settings.API_PREFIX)
 
 @app.get("/", tags=["Health"])

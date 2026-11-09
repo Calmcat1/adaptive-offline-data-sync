@@ -1,10 +1,3 @@
-"""Adaptive synchronization policy.
-The Random Forest is trained from historical sync outcomes when enough labelled
-observations exist. Until then, a transparent rule-based fallback is used. The
-model predicts whether current conditions are suitable for a sync attempt; the
-policy then considers queue size, battery, and data budget.
-"""
-
 from pathlib import Path
 import joblib
 import pandas as pd
@@ -14,14 +7,23 @@ MODEL_PATH = Path("models/random_forest_sync.joblib")
 FEATURES = ["signal_strength", "bandwidth_kbps", "latency_ms", "battery_percent", "queue_size", "is_wifi"]
 
 def _features(context: dict) -> pd.DataFrame:
-    network = context.get("network_type", "unknown")
+    # Accept either standard snake_case keys or dataset column names
+    signal = context.get("signal_strength", context.get("SignalStrengthPercent"))
+    bandwidth = context.get("bandwidth_kbps", context.get("BandwidthKbps"))
+    latency = context.get("latency_ms", context.get("LatencyM"))
+    battery = context.get("battery_percent", context.get("BatteryPercent"))
+    network = context.get("network_type", context.get("NetworkT", "unknown"))
+
+    # Support case-insensitive Wi-Fi check for "Wi-Fi" / "wifi"
+    is_wifi_val = 1 if str(network).lower().replace("-", "") == "wifi" else 0
+
     row = {
-        "signal_strength": context.get("signal_strength") if context.get("signal_strength") is not None else 50,
-        "bandwidth_kbps": context.get("bandwidth_kbps") if context.get("bandwidth_kbps") is not None else 500,
-        "latency_ms": context.get("latency_ms") if context.get("latency_ms") is not None else 250,
-        "battery_percent": context.get("battery_percent") if context.get("battery_percent") is not None else 50,
+        "signal_strength": signal if signal is not None else 50,
+        "bandwidth_kbps": bandwidth if bandwidth is not None else 500,
+        "latency_ms": latency if latency is not None else 250,
+        "battery_percent": battery if battery is not None else 50,
         "queue_size": context.get("queue_size", 0),
-        "is_wifi": 1 if network == "wifi" else 0,
+        "is_wifi": is_wifi_val,
     }
     return pd.DataFrame([row], columns=FEATURES)
 
@@ -31,18 +33,28 @@ def train_model(observations: list[dict]) -> dict:
     for item in observations:
         if item.get("sync_success") is None:
             continue
+        
+        signal = item.get("signal_strength", item.get("SignalStrengthPercent"))
+        bandwidth = item.get("bandwidth_kbps", item.get("BandwidthKbps"))
+        latency = item.get("latency_ms", item.get("LatencyM"))
+        battery = item.get("battery_percent", item.get("BatteryPercent"))
+        network = item.get("network_type", item.get("NetworkT", "unknown"))
+        is_wifi_val = 1 if str(network).lower().replace("-", "") == "wifi" else 0
+
         row = {
-            "signal_strength": item.get("signal_strength") if item.get("signal_strength") is not None else 50,
-            "bandwidth_kbps": item.get("bandwidth_kbps") if item.get("bandwidth_kbps") is not None else 500,
-            "latency_ms": item.get("latency_ms") if item.get("latency_ms") is not None else 250,
-            "battery_percent": item.get("battery_percent") if item.get("battery_percent") is not None else 50,
+            "signal_strength": signal if signal is not None else 50,
+            "bandwidth_kbps": bandwidth if bandwidth is not None else 500,
+            "latency_ms": latency if latency is not None else 250,
+            "battery_percent": battery if battery is not None else 50,
             "queue_size": item.get("queue_size", 1),
-            "is_wifi": 1 if item.get("network_type") == "wifi" else 0,
+            "is_wifi": is_wifi_val,
             "target": 1 if item["sync_success"] else 0,
         }
         rows.append(row)
+        
     if len(rows) < 20 or len({r["target"] for r in rows}) < 2:
         return {"trained": False, "samples": len(rows), "message": "Need at least 20 labelled observations containing both successful and failed syncs."}
+        
     df = pd.DataFrame(rows)
     model = RandomForestClassifier(n_estimators=100, random_state=42, class_weight="balanced")
     model.fit(df[FEATURES], df["target"])
@@ -66,12 +78,13 @@ def recommend_sync(context: dict) -> dict:
         suitable = confidence >= 0.55
 
     # Safe, explainable fallback if training data is not available.
-    signal = context.get("signal_strength")
-    bandwidth = context.get("bandwidth_kbps")
-    latency = context.get("latency_ms")
-    battery = context.get("battery_percent")
+    signal = context.get("signal_strength", context.get("SignalStrengthPercent"))
+    bandwidth = context.get("bandwidth_kbps", context.get("BandwidthKbps"))
+    latency = context.get("latency_ms", context.get("LatencyM"))
+    battery = context.get("battery_percent", context.get("BatteryPercent"))
     budget = context.get("data_budget_kb")
-    wifi = context.get("network_type") == "wifi"
+    network = context.get("network_type", context.get("NetworkT"))
+    wifi = str(network).lower().replace("-", "") == "wifi" if network else False
 
     if suitable is None:
         suitable = (
