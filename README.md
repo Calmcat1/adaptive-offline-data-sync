@@ -12,6 +12,7 @@ FastAPI + MongoDB + scikit-learn backend for the IS Project II.
 - Synchronization history and summary statistics
 - Network-condition observations
 - Random Forest training from recorded outcomes, with rule-based fallback until sufficient training data exists
+- Ensemble ML Pipeline: Histogram-based Gradient Boosting (HistGradientBoostingClassifier) / Random Forest training from recorded outcomes with 5-Fold Stratified Cross-Validation, dynamic threshold optimization, and rule-based fallback
 
 ## Architecture
 Android (Kotlin, Jetpack Compose, Room/SQLite, WorkManager) -> FastAPI REST API -> adaptive decision engine (Python/Pandas/scikit-learn) -> MongoDB.
