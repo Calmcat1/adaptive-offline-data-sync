@@ -1,15 +1,15 @@
 from typing import Any, Dict, List
 from fastapi import APIRouter, HTTPException
-from app.adaptive_engine import recommend_sync
-from app.schemas import TelemetryContext, SyncRecommendationResponse
+from app.adaptive_engine_v3 import recommend_sync
+from app.schemas import MetricsContext, SyncRecommendationResponse
 
 router = APIRouter(prefix="/sync", tags=["Sync Recommendation"])
 
 @router.post("/recommend", response_model=SyncRecommendationResponse)
-def get_sync_recommendation(context: Dict[str, Any]):
-    """Receives telemetry dictionary and outputs adaptive sync decision."""
+def get_sync_recommendation(context: MetricsContext):
+    """Receives metrics context and outputs adaptive sync decision."""
     try:
-        return recommend_sync(context)
+        return recommend_sync(context.dict())
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

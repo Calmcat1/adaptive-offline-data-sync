@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Any, Literal
+from typing import Any, Literal, Optional
 from pydantic import BaseModel, EmailStr, Field, ConfigDict
 
 class UserCreate(BaseModel):
@@ -24,14 +24,21 @@ class FieldRecordIn(BaseModel):
     client_updated_at: datetime | None = None
     version: int = Field(default=1, ge=1)
 
-class SyncRequest(BaseModel):
-    records: list[FieldRecordIn] = Field(min_length=1, max_length=500)
-    network_type: Literal["wifi", "cellular", "offline", "unknown"] = "unknown"
-    signal_strength: int | None = Field(default=None, ge=0, le=100)
-    bandwidth_kbps: float | None = Field(default=None, ge=0)
-    latency_ms: float | None = Field(default=None, ge=0)
-    battery_percent: int | None = Field(default=None, ge=0, le=100)
-    data_budget_kb: float | None = Field(default=None, ge=0)
+class MetricsContext(BaseModel):
+    network_type: str = Field(..., alias="NetworkT", description="Network type e.g. Wi-Fi, Cellular")
+    signal_strength: float = Field(..., alias="SignalStrengthPercent")
+    bandwidth_kbps: float = Field(..., alias="BandwidthKbps")
+    latency_ms: float = Field(..., alias="LatencyMs")
+    battery_percent: float = Field(..., alias="BatteryPercent")
+    queue_size: int = Field(0, alias="QueueSize")
+    data_budget_kb: Optional[float] = None
+
+class SyncRecommendationResponse(BaseModel):
+    should_sync: bool
+    strategy: str
+    max_records: Optional[int] = None
+    reason: str
+    confidence: Optional[float] = None
 
 class NetworkObservationIn(BaseModel):
     network_type: Literal["wifi", "cellular", "offline", "unknown"] = "unknown"
