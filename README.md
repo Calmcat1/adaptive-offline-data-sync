@@ -72,7 +72,7 @@ The system follows an offline-first synchronization workflow:
 
 ### 1. Adaptive Decision Engine (`adaptive_decision_engine`)
 
-A deterministic, rule-based engine that evaluates network and device telemetry to determine an appropriate synchronization strategy.
+Mathematical, rule-based engine that evaluates network and device telemetry to determine an appropriate synchronization strategy.
 
 **Input parameters:**
 
