@@ -1,5 +1,5 @@
 
-# Adaptive Offline Data Synchronization Backend
+# Adaptive Offline-first Data Synchronization Backend
 
 **FastAPI + MongoDB backend for ADAS (Adaptive Offline Data Synchronization Framework).**
 
